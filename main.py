@@ -1,11 +1,16 @@
 import requests
+import os
 
 
-url = "https://tululu.org/txt.php?id=32168"
+if not os.path.exists('books'):
+    os.makedirs('books')
 
-response = requests.get(url)
-response.raise_for_status()
+for book_number in range(1,11):
+    url = f"https://tululu.org/txt.php?id={book_number}"
+    response = requests.get(url)
+    response.raise_for_status()
 
-filename = 'book.txt'
-with open(filename, 'wb') as file:
-    file.write(response.content)
+    filename = f'books/id{book_number}.txt'
+    with open(filename, 'wb') as file:
+        file.write(response.content)
+
