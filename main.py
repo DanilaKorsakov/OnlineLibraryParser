@@ -2,7 +2,9 @@ import requests
 import os
 from bs4 import BeautifulSoup
 import pathlib
+
 from pathvalidate import sanitize_filename
+from urllib.parse import unquote, urljoin, urlsplit
 
 
 def check_for_redirect(book):
@@ -14,7 +16,9 @@ def get_book_info(response):
     soup = BeautifulSoup(response.text, 'lxml')
     title_text = soup.find(id="content").find('h1')
     title_name, title_author = title_text.text.split(' :: ')
-    return title_name.strip()
+    title_image = soup.find(class_="bookimage").find('img')['src']
+    image_url = urljoin('http://tululu.org',title_image)
+    return title_name.strip(), image_url
 
 def download_txt(response, book_number, filename, folder='books/'):
 
@@ -25,6 +29,18 @@ def download_txt(response, book_number, filename, folder='books/'):
     with open(file_path, 'wb') as file:
         file.write(response.content)
 
+def download_image (url,  folder='images/'):
+
+    pathlib.Path(folder).mkdir(parents=True, exist_ok=True)
+
+    response = requests.get(url)
+    response.raise_for_status()
+
+    filename = urlsplit(url).path.split('/')[-1]
+    filepath = os.path.join(folder,filename)
+
+    with open(unquote(filepath), 'wb') as file:
+        file.write(response.content)
 
 
 
@@ -44,9 +60,10 @@ for book_number in range(1,11):
 
         check_for_redirect(book_response)
 
-        book_name = get_book_info(book_response)
+        book_name, image_url = get_book_info(book_response)
 
-        download_txt(response,book_number, book_name)
+        # download_txt(response,book_number, book_name)
+        download_image(image_url)
 
     except requests.exceptions.HTTPError:
         print("Такой книги нет")
