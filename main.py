@@ -18,7 +18,20 @@ def get_book_info(response):
     title_name, title_author = title_text.text.split(' :: ')
     title_image = soup.find(class_="bookimage").find('img')['src']
     image_url = urljoin('http://tululu.org',title_image)
-    return title_name.strip(), image_url
+
+    book_comments = soup.find_all("div", class_="texts")
+    book_comments_text = []
+    for book_comment in book_comments:
+        book_comments_text.append(book_comment.find(class_='black').text)
+
+    book_info = {
+        "title":title_name.strip(),
+        "author":title_author.strip(),
+        "image_url": image_url,
+        "comments": book_comments_text,
+    }
+
+    return book_info
 
 def download_txt(response, book_number, filename, folder='books/'):
 
@@ -60,10 +73,10 @@ for book_number in range(1,11):
 
         check_for_redirect(book_response)
 
-        book_name, image_url = get_book_info(book_response)
+        book_info = get_book_info(book_response)
 
-        # download_txt(response,book_number, book_name)
-        download_image(image_url)
+        download_txt(response,book_number, book_info['title'])
+        download_image(book_info['image_url'])
 
     except requests.exceptions.HTTPError:
         print("Такой книги нет")
