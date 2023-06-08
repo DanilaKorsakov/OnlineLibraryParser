@@ -1,15 +1,17 @@
 import requests
 import os
-from bs4 import BeautifulSoup
+import argparse
 import pathlib
 
 from pathvalidate import sanitize_filename
 from urllib.parse import unquote, urljoin, urlsplit
+from bs4 import BeautifulSoup
 
 
 def check_for_redirect(book):
     if book.history:
         raise requests.exceptions.HTTPError
+
 
 def parse_book_page(response):
 
@@ -38,6 +40,7 @@ def parse_book_page(response):
 
     return book_page_params
 
+
 def download_txt(response, book_number, filename, folder='books/'):
 
     pathlib.Path(folder).mkdir(parents=True, exist_ok=True)
@@ -46,6 +49,7 @@ def download_txt(response, book_number, filename, folder='books/'):
 
     with open(file_path, 'wb') as file:
         file.write(response.content)
+
 
 def download_image (url,  folder='images/'):
 
@@ -61,31 +65,41 @@ def download_image (url,  folder='images/'):
         file.write(response.content)
 
 
+def main():
 
-for book_number in range(1,11):
+    parser = argparse.ArgumentParser(
+        description='Программа получает информацию по книгам с сайта http://tululu.org, а также скачивает их текст и картинку'
+    )
+    parser.add_argument("start_id", type=int, help="Начальная точка скачивания книг", default=1)
+    parser.add_argument("end_id", type=int, help="Конечная точка скачивания книг", default=11)
+    args = parser.parse_args()
 
-    book_url = f"https://tululu.org/txt.php?id={book_number}"
-    site_url = f'https://tululu.org/b{book_number}/'
-
-    try:
-        response = requests.get(book_url)
-        response.raise_for_status()
-
-        check_for_redirect(response)
-
-        book_response = requests.get(site_url)
-        book_response.raise_for_status()
-
-        check_for_redirect(book_response)
-
-        book_info = get_book_info(book_response)
-
-        download_txt(response,book_number, book_info['title'])
-        download_image(book_info['image_url'])
-
-    except requests.exceptions.HTTPError:
-        print("Такой книги нет")
+    for book_number in range(args.start_id, args.end_id):
 
 
+        book_url = f"https://tululu.org/txt.php?id={book_number}"
+        site_url = f'https://tululu.org/b{book_number}/'
 
+        try:
+            response = requests.get(book_url)
+            response.raise_for_status()
+
+            check_for_redirect(response)
+
+            book_response = requests.get(site_url)
+            book_response.raise_for_status()
+
+            check_for_redirect(book_response)
+
+            book_info = parse_book_page(book_response)
+
+            download_txt(response,book_number, book_info['title'])
+            download_image(book_info['image_url'])
+
+        except requests.exceptions.HTTPError:
+            print("Такой книги нет")
+
+
+if __name__ == '__main__':
+    main()
 
