@@ -11,7 +11,7 @@ def check_for_redirect(book):
     if book.history:
         raise requests.exceptions.HTTPError
 
-def get_book_info(response):
+def parse_book_page(response):
 
     soup = BeautifulSoup(response.text, 'lxml')
     title_text = soup.find(id="content").find('h1')
@@ -80,8 +80,8 @@ for book_number in range(1,11):
 
         book_info = get_book_info(book_response)
 
-        # download_txt(response,book_number, book_info['title'])
-        # download_image(book_info['image_url'])
+        download_txt(response,book_number, book_info['title'])
+        download_image(book_info['image_url'])
 
     except requests.exceptions.HTTPError:
         print("Такой книги нет")
