@@ -24,14 +24,19 @@ def get_book_info(response):
     for book_comment in book_comments:
         book_comments_text.append(book_comment.find(class_='black').text)
 
-    book_info = {
+    book_genres = soup.find("span", class_='d_book').find_all('a')
+
+    book_genres = [genre_tag.text for genre_tag in book_genres]
+
+    book_page_params = {
         "title":title_name.strip(),
         "author":title_author.strip(),
         "image_url": image_url,
         "comments": book_comments_text,
+        "genres": book_genres,
     }
 
-    return book_info
+    return book_page_params
 
 def download_txt(response, book_number, filename, folder='books/'):
 
@@ -75,8 +80,8 @@ for book_number in range(1,11):
 
         book_info = get_book_info(book_response)
 
-        download_txt(response,book_number, book_info['title'])
-        download_image(book_info['image_url'])
+        # download_txt(response,book_number, book_info['title'])
+        # download_image(book_info['image_url'])
 
     except requests.exceptions.HTTPError:
         print("Такой книги нет")
