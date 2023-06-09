@@ -1,8 +1,9 @@
-import requests
 import os
 import argparse
 import pathlib
+from time import sleep
 
+import requests
 from pathvalidate import sanitize_filename
 from urllib.parse import unquote, urljoin, urlsplit
 from bs4 import BeautifulSoup
@@ -99,6 +100,9 @@ def main():
 
         except requests.exceptions.HTTPError:
             print("Такой книги нет")
+        except requests.exceptions.ConnectionError:
+            print("Повторное подключение к серверу")
+            sleep(20)
 
 
 if __name__ == '__main__':
