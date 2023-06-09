@@ -70,23 +70,24 @@ def main():
     parser = argparse.ArgumentParser(
         description='Программа получает информацию по книгам с сайта http://tululu.org, а также скачивает их текст и картинку'
     )
-    parser.add_argument("start_id", type=int, help="Начальная точка скачивания книг", default=1)
-    parser.add_argument("end_id", type=int, help="Конечная точка скачивания книг", default=11)
+    parser.add_argument("--start_id", type=int, help="Начальная точка скачивания книг", default=1)
+    parser.add_argument("--end_id", type=int, help="Конечная точка скачивания книг", default=11)
     args = parser.parse_args()
+
+    book_url = "https://tululu.org/txt.php"
+    site_url = 'https://tululu.org/b{}/'
 
     for book_number in range(args.start_id, args.end_id):
 
-
-        book_url = f"https://tululu.org/txt.php?id={book_number}"
-        site_url = f'https://tululu.org/b{book_number}/'
+        params = {"id": book_number}
 
         try:
-            response = requests.get(book_url)
+            response = requests.get(book_url,params)
             response.raise_for_status()
 
             check_for_redirect(response)
 
-            book_response = requests.get(site_url)
+            book_response = requests.get(site_url.format(book_number))
             book_response.raise_for_status()
 
             check_for_redirect(book_response)
