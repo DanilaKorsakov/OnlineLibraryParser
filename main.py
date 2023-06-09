@@ -92,10 +92,10 @@ def main():
 
             check_for_redirect(book_response)
 
-            book_info = parse_book_page(book_response)
+            book_parameters = parse_book_page(book_response)
 
-            download_txt(response,book_number, book_info['title'])
-            download_image(book_info['image_url'])
+            download_txt(response,book_number, book_parameters['title'])
+            download_image(book_parameters['image_url'])
 
         except requests.exceptions.HTTPError:
             print("Такой книги нет")
