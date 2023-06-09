@@ -74,20 +74,20 @@ def main():
     parser.add_argument("--end_id", type=int, help="Конечная точка скачивания книг", default=11)
     args = parser.parse_args()
 
-    book_url = "https://tululu.org/txt.php"
-    site_url = 'https://tululu.org/b{}/'
+    book_txt_url= "https://tululu.org/txt.php"
+    book_url = 'https://tululu.org/b{}/'
 
     for book_number in range(args.start_id, args.end_id):
 
         params = {"id": book_number}
 
         try:
-            response = requests.get(book_url,params)
+            response = requests.get(book_txt_url,params)
             response.raise_for_status()
 
             check_for_redirect(response)
 
-            book_response = requests.get(site_url.format(book_number))
+            book_response = requests.get(book_url.format(book_number))
             book_response.raise_for_status()
 
             check_for_redirect(book_response)
