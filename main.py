@@ -13,13 +13,13 @@ def check_for_redirect(book):
         raise requests.exceptions.HTTPError
 
 
-def parse_book_page(response):
+def parse_book_page(response, template_url):
 
     soup = BeautifulSoup(response.text, 'lxml')
     title_text = soup.find(id="content").find('h1')
     title_name, title_author = title_text.text.split(' :: ')
     title_image = soup.find(class_="bookimage").find('img')['src']
-    image_url = urljoin('http://tululu.org',title_image)
+    image_url = urljoin(template_url,title_image)
 
     book_comments = soup.find_all("div", class_="texts")
     book_comments_text = []
@@ -92,7 +92,7 @@ def main():
 
             check_for_redirect(book_response)
 
-            book_parameters = parse_book_page(book_response)
+            book_parameters = parse_book_page(book_response,book_url)
 
             download_txt(response,book_number, book_parameters['title'])
             download_image(book_parameters['image_url'])
