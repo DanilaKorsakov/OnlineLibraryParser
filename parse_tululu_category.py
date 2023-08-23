@@ -43,92 +43,111 @@ def parse_book_page(response, template_url):
     return book_page_params
 
 
-def download_txt(response, filename, folder='books/'):
+def download_txt(response, filename, dest_folder, folder='books/'):
 
-    pathlib.Path(folder).mkdir(parents=True, exist_ok=True)
+    full_path = f'{dest_folder}/{folder}'
 
-    file_path = os.path.join(folder, f'{sanitize_filename(filename)}.txt')
+    pathlib.Path(full_path).mkdir(parents=True, exist_ok=True)
+
+    file_path = os.path.join(full_path, f'{sanitize_filename(filename)}.txt')
 
     with open(file_path, 'wb') as file:
         file.write(response.content)
 
 
-def download_image (url,  folder='images/'):
+def download_image (url,  dest_folder, folder='images/'):
 
-    pathlib.Path(folder).mkdir(parents=True, exist_ok=True)
+    full_path = f'{dest_folder}/{folder}'
+
+    pathlib.Path(full_path).mkdir(parents=True, exist_ok=True)
 
     response = requests.get(url)
     response.raise_for_status()
 
     filename = urlsplit(url).path.split('/')[-1]
-    filepath = os.path.join(folder,filename)
+    filepath = os.path.join(full_path,filename)
 
     with open(unquote(filepath), 'wb') as file:
         file.write(response.content)
 
 
-parser = argparse.ArgumentParser(
-    description='Программа получает информацию по книгам с сайта http://tululu.org, а также скачивает их текст и картинку'
-)
-parser.add_argument("--start_page", type=int, help="Начальная страница для скачивания книг", default=1)
-parser.add_argument("--end_page", type=int, help="Последняя страница для скачивания книг", default=11)
-args = parser.parse_args()
+def main():
 
-template_url = 'https://tululu.org/'
+    parser = argparse.ArgumentParser(
+        description='Программа получает информацию по книгам с сайта http://tululu.org, а также скачивает их текст и картинку'
+    )
+    parser.add_argument("--start_page", type=int, help="Начальная страница для скачивания книг", default=1)
+    parser.add_argument("--end_page", type=int, help="Последняя страница для скачивания книг", default=11)
+    parser.add_argument("--dest_folder", type=str, help="путь к каталогу с результатами парсинга: картинкам, книгам, JSON", default='result')
+    parser.add_argument("--skip_imgs", help="Не скачивать изображения", action='store_true')
+    parser.add_argument("--skip_txt", help="Не скачивать книги", action='store_true')
 
-book_txt_url= "https://tululu.org/txt.php"
+    args = parser.parse_args()
 
-books_archive = []
+    pathlib.Path(args.dest_folder).mkdir(parents=True, exist_ok=True)
 
-for page_number in range(args.start_page, args.end_page):
-    url = "https://tululu.org/l55/"
-    if page_number !=1:
-        url = f"{url}/{page_number}"
-    response = requests.get(url)
-    response.raise_for_status()
-    soup = BeautifulSoup(response.text, 'lxml')
-    table_line = soup.select(".d_book")
+    template_url = 'https://tululu.org/'
 
+    book_txt_url= "https://tululu.org/txt.php"
 
-    for book in table_line:
+    books_archive = []
 
-        table_link = book.select_one('a')
-        book_url = urljoin(template_url,table_link['href'])
-
-        try:
-
-            response = requests.get(book_url)
-            response.raise_for_status()
-
-            check_for_redirect(response)
-
-            book_parameters = parse_book_page(response,book_url)
-
-            books_archive.append(book_parameters)
-
-            download_image(book_parameters['image_url'])
-
-            book_id = book_url.split('/')[3]
-
-            book_number = book_id[1:]
-
-            params = {"id": book_number}
-
-            book_response = requests.get(book_txt_url,params)
-            book_response.raise_for_status()
-
-            check_for_redirect(book_response)
-
-            download_txt(book_response,book_parameters['title'])
-
-        except requests.exceptions.HTTPError:
-            print("Такой книги нет")
-        except requests.exceptions.ConnectionError:
-            print("Повторное подключение к серверу")
-            sleep(20)
+    for page_number in range(args.start_page, args.end_page):
+        url = "https://tululu.org/l55/"
+        if page_number !=1:
+            url = f"{url}/{page_number}"
+        response = requests.get(url)
+        response.raise_for_status()
+        soup = BeautifulSoup(response.text, 'lxml')
+        table_line = soup.select(".d_book")
 
 
-with open("books.json", "w", encoding='utf8') as my_file:
-    json.dump(books_archive, my_file, ensure_ascii=False)
+        for book in table_line:
 
+            table_link = book.select_one('a')
+            book_url = urljoin(template_url,table_link['href'])
+
+            try:
+
+                response = requests.get(book_url)
+                response.raise_for_status()
+
+                check_for_redirect(response)
+
+                book_parameters = parse_book_page(response,book_url)
+
+                books_archive.append(book_parameters)
+
+
+                if not args.skip_imgs:
+                    download_image(book_parameters['image_url'],args.dest_folder)
+
+                book_id = book_url.split('/')[3]
+
+                book_number = book_id[1:]
+
+                params = {"id": book_number}
+
+                book_response = requests.get(book_txt_url,params)
+                book_response.raise_for_status()
+
+                check_for_redirect(book_response)
+
+                if not args.skip_txt:
+                    download_txt(book_response,book_parameters['title'],args.dest_folder)
+
+            except requests.exceptions.HTTPError:
+                print("Такой книги нет")
+            except requests.exceptions.ConnectionError:
+                print("Повторное подключение к серверу")
+                sleep(20)
+
+    file_path = os.path.join(args.dest_folder,"books.json")
+
+    with open(file_path, "w", encoding='utf8') as my_file:
+        json.dump(books_archive, my_file, ensure_ascii=False)
+
+
+if __name__ == '__main__':
+    main()
 
