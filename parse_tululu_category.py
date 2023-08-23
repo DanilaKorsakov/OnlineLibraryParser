@@ -17,17 +17,17 @@ def check_for_redirect(book):
 def parse_book_page(response, template_url):
 
     soup = BeautifulSoup(response.text, 'lxml')
-    title_text = soup.find(id="content").find('h1')
+    title_text = soup.select_one("#content h1")
     title_name, title_author = title_text.text.split(' :: ')
-    title_image = soup.find(class_="bookimage").find('img')['src']
+    title_image = soup.select_one(".bookimage img")['src']
     image_url = urljoin(template_url,title_image)
 
-    book_comments = soup.find_all("div", class_="texts")
+    book_comments = soup.select(".texts")
     book_comments_text = []
     for book_comment in book_comments:
-        book_comments_text.append(book_comment.find(class_='black').text)
+        book_comments_text.append(book_comment.select_one('.black').text)
 
-    book_genres = soup.find("span", class_='d_book').find_all('a')
+    book_genres = soup.select('.d_book a')
 
     book_genres = [genre_tag.text for genre_tag in book_genres]
 
@@ -79,12 +79,12 @@ for page_number in range(1,11):
     response = requests.get(url)
     response.raise_for_status()
     soup = BeautifulSoup(response.text, 'lxml')
-    table_line = soup.find_all(class_="d_book")
+    table_line = soup.select(".d_book")
 
 
     for book in table_line:
 
-        table_link = book.find('a')
+        table_link = book.select_one('a')
         book_url = urljoin(template_url,table_link['href'])
 
         try:
