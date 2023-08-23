@@ -1,6 +1,7 @@
 import os
 import json
 import pathlib
+import argparse
 from time import sleep
 
 import requests
@@ -66,13 +67,20 @@ def download_image (url,  folder='images/'):
         file.write(response.content)
 
 
+parser = argparse.ArgumentParser(
+    description='Программа получает информацию по книгам с сайта http://tululu.org, а также скачивает их текст и картинку'
+)
+parser.add_argument("--start_page", type=int, help="Начальная страница для скачивания книг", default=1)
+parser.add_argument("--end_page", type=int, help="Последняя страница для скачивания книг", default=11)
+args = parser.parse_args()
+
 template_url = 'https://tululu.org/'
 
 book_txt_url= "https://tululu.org/txt.php"
 
 books_archive = []
 
-for page_number in range(1,11):
+for page_number in range(args.start_page, args.end_page):
     url = "https://tululu.org/l55/"
     if page_number !=1:
         url = f"{url}/{page_number}"
