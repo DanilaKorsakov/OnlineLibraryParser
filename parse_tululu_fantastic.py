@@ -35,18 +35,17 @@ def main():
     for page_number in range(args.start_page, args.end_page):
         url = "https://tululu.org/l55/"
         url = f"{url}/{page_number}"
-        response = requests.get(url)
-        response.raise_for_status()
-        soup = BeautifulSoup(response.text, 'lxml')
-        book_content = soup.select(".d_book")
+        try:
+            response = requests.get(url)
+            response.raise_for_status()
+            soup = BeautifulSoup(response.text, 'lxml')
+            book_content = soup.select(".d_book")
 
 
-        for book in book_content:
+            for book in book_content:
 
-            book_link = book.select_one('a')
-            book_url = urljoin(template_url,book_link['href'])
-
-            try:
+                book_link = book.select_one('a')
+                book_url = urljoin(template_url,book_link['href'])
 
                 response = requests.get(book_url)
                 response.raise_for_status()
@@ -75,11 +74,11 @@ def main():
                 if not args.skip_txt:
                     download_txt(book_response,book_parameters['title'],args.dest_folder)
 
-            except requests.exceptions.HTTPError:
-                print("Такой книги нет")
-            except requests.exceptions.ConnectionError:
-                print("Повторное подключение к серверу")
-                sleep(20)
+        except requests.exceptions.HTTPError:
+            print("Такой книги нет")
+        except requests.exceptions.ConnectionError:
+            print("Повторное подключение к серверу")
+            sleep(20)
 
     file_path = os.path.join(args.dest_folder,"books.json")
 
