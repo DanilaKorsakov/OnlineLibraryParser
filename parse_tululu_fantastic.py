@@ -34,8 +34,7 @@ def main():
 
     for page_number in range(args.start_page, args.end_page):
         url = "https://tululu.org/l55/"
-        if page_number !=1:
-            url = f"{url}/{page_number}"
+        url = f"{url}/{page_number}"
         response = requests.get(url)
         response.raise_for_status()
         soup = BeautifulSoup(response.text, 'lxml')
