@@ -26,15 +26,14 @@ def main():
 
     pathlib.Path(args.dest_folder).mkdir(parents=True, exist_ok=True)
 
-    template_url = 'https://tululu.org/'
-
     book_txt_url= "https://tululu.org/txt.php"
+    template_url = "https://tululu.org/l55/"
+
 
     books_archive = []
 
     for page_number in range(args.start_page, args.end_page):
-        url = "https://tululu.org/l55/"
-        url = f"{url}/{page_number}"
+        url = f"{template_url}/{page_number}"
         try:
             response = requests.get(url)
             response.raise_for_status()
