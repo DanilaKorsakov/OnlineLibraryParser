@@ -18,34 +18,38 @@
 
 1. Просто запустить скрипт используя команду
     ```
-    python main.py
+    python parse_tululu_business.py
     ```
 1.  Запустить скрипт, указывая с какой книги по какую скачивать, например:
     ```
-    main.py --start_id 20 --end_id 30
+    python parse_tululu_business.py --start_id 20 --end_id 30
     ```
-
+1. Можно изменять финальную папку, где окажутся все файлы
+    ```
+    python parse_tululu_business.py --dest_folder Название папки
+    ```
+   
 Запустить второй скрипт можно с множеством вариантов:
 
 1. Простой запуск без аргументов
     ```
-    python parse_tululu_category.py
+    python parse_tululu_fantastic.py
     ```
 1. Запустить указывая начальную и концечную страницы для скачивания книг и их обложек
     ```
-    parse_tululu_category.py --start_page 1 --end_page 2
+    python parse_tululu_fantastic.py --start_page 1 --end_page 2
     ```
 1. Запретить скачивание книг
     ```
-    parse_tululu_category.py --skip_txt
+    python parse_tululu_fantastic.py --skip_txt
     ```
 1. Запретить скачивание обложек
     ```
-    parse_tululu_category.py --skip_imgs
+    python parse_tululu_fantastic.py --skip_imgs
     ```
 1. Можно изменять финальную папку, где окажутся все файлы
     ```
-    parse_tululu_category.py --dest_folder Название папки
+    python parse_tululu_fantastic.py --dest_folder Название папки
     ```
 ## Цель проекта
 Код написан в образовательных целях на онлайн-курсе для веб-разработчиков [dvmn.org](https://dvmn.org/).
