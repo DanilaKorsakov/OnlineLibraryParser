@@ -38,13 +38,13 @@ def main():
         response = requests.get(url)
         response.raise_for_status()
         soup = BeautifulSoup(response.text, 'lxml')
-        table_line = soup.select(".d_book")
+        book_content = soup.select(".d_book")
 
 
-        for book in table_line:
+        for book in book_content:
 
-            table_link = book.select_one('a')
-            book_url = urljoin(template_url,table_link['href'])
+            book_link = book.select_one('a')
+            book_url = urljoin(template_url,book_link['href'])
 
             try:
 
