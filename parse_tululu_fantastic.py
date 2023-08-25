@@ -37,6 +37,9 @@ def main():
         try:
             response = requests.get(url)
             response.raise_for_status()
+
+            check_for_redirect(response)
+
             soup = BeautifulSoup(response.text, 'lxml')
             book_content = soup.select(".d_book")
 
@@ -44,35 +47,39 @@ def main():
             for book in book_content:
 
                 book_link = book.select_one('a')
-                book_url = urljoin(template_url,book_link['href'])
 
-                response = requests.get(book_url)
-                response.raise_for_status()
+                book_url = urljoin('https://tululu.org',book_link['href'])
 
-                check_for_redirect(response)
+                try:
 
-                book_parameters = parse_book_page(response,book_url)
+                    response = requests.get(book_url)
+                    response.raise_for_status()
 
-                books_archive.append(book_parameters)
+                    check_for_redirect(response)
+
+                    book_parameters = parse_book_page(response,book_url)
+
+                    books_archive.append(book_parameters)
 
 
-                if not args.skip_imgs:
-                    download_image(book_parameters['image_url'],args.dest_folder)
+                    if not args.skip_imgs:
+                        download_image(book_parameters['image_url'],args.dest_folder)
 
-                book_id = book_url.split('/')[3]
+                    if not args.skip_txt:
+                        book_id = book_url.split('/')[3]
 
-                book_number = book_id[1:]
+                        book_number = book_id[1:]
 
-                params = {"id": book_number}
+                        params = {"id": book_number}
 
-                book_response = requests.get(book_txt_url,params)
-                book_response.raise_for_status()
+                        book_response = requests.get(book_txt_url,params)
+                        book_response.raise_for_status()
 
-                check_for_redirect(book_response)
-
-                if not args.skip_txt:
-                    download_txt(book_response,book_parameters['title'],args.dest_folder)
-
+                        check_for_redirect(book_response)
+                        download_txt(book_response,book_parameters['title'],args.dest_folder)
+                except requests.exceptions.ConnectionError:
+                    print("Повторное подключение к серверу")
+                    sleep(20)
         except requests.exceptions.HTTPError:
             print("Такой книги нет")
         except requests.exceptions.ConnectionError:
