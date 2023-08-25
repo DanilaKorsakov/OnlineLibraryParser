@@ -80,6 +80,8 @@ def main():
                 except requests.exceptions.ConnectionError:
                     print("Повторное подключение к серверу")
                     sleep(20)
+                except requests.exceptions.HTTPError:
+                    print("Такой книги нет")
         except requests.exceptions.HTTPError:
             print("Такой книги нет")
         except requests.exceptions.ConnectionError:
